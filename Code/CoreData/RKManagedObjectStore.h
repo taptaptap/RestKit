@@ -220,6 +220,11 @@
  */
 - (void)createManagedObjectContexts;
 
+/** 
+ Use application own MOC.
+ */
+- (void)usePersistentStoreManagedObjectContext:(NSManagedObjectContext *)moc andMainQueueManagedObjectContext:(NSManagedObjectContext *)mainMoc;
+
 /**
  Returns the managed object context of the receiver that is associated with the persistent store coordinator and is responsible for managing persistence.
 

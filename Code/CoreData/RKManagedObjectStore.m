@@ -295,19 +295,20 @@ static char RKManagedObjectContextChangeMergingObserverAssociationKey;
 
 - (void)createManagedObjectContexts
 {
-    NSAssert(!self.persistentStoreManagedObjectContext, @"Unable to create managed object contexts: A primary managed object context already exists.");
-    NSAssert(!self.mainQueueManagedObjectContext, @"Unable to create managed object contexts: A main queue managed object context already exists.");
-    NSAssert([[self.persistentStoreCoordinator persistentStores] count], @"Cannot create managed object contexts: The persistent store coordinator does not have any persistent stores. This likely means that you forgot to add a persistent store or your attempt to do so failed with an error.");
-
     // Our primary MOC is a private queue concurrency type
-    self.persistentStoreManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-    self.persistentStoreManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
-    self.persistentStoreManagedObjectContext.mergePolicy = NSMergeByPropertyStoreTrumpMergePolicy;
+    if (! self.persistentStoreManagedObjectContext) {
+        NSAssert([[self.persistentStoreCoordinator persistentStores] count], @"Cannot create managed object contexts: The persistent store coordinator does not have any persistent stores. This likely means that you forgot to add a persistent store or your attempt to do so failed with an error.");
+        self.persistentStoreManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        self.persistentStoreManagedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator;
+        self.persistentStoreManagedObjectContext.mergePolicy = NSMergeByPropertyStoreTrumpMergePolicy;
+    }
 
     // Create an MOC for use on the main queue
-    self.mainQueueManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
-    self.mainQueueManagedObjectContext.parentContext = self.persistentStoreManagedObjectContext;
-    self.mainQueueManagedObjectContext.mergePolicy = NSMergeByPropertyStoreTrumpMergePolicy;
+    if (! self.mainQueueManagedObjectContext) {
+        self.mainQueueManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+        self.mainQueueManagedObjectContext.parentContext = self.persistentStoreManagedObjectContext;
+        self.mainQueueManagedObjectContext.mergePolicy = NSMergeByPropertyStoreTrumpMergePolicy;
+    }
 
     // Merge changes from a primary MOC back into the main queue when complete
     RKManagedObjectContextChangeMergingObserver *observer = [[RKManagedObjectContextChangeMergingObserver alloc] initWithObservedContext:self.persistentStoreManagedObjectContext mergeContext:self.mainQueueManagedObjectContext];
@@ -315,6 +316,13 @@ static char RKManagedObjectContextChangeMergingObserverAssociationKey;
                              &RKManagedObjectContextChangeMergingObserverAssociationKey,
                              observer,
                              OBJC_ASSOCIATION_RETAIN);
+}
+
+- (void)usePersistentStoreManagedObjectContext:(NSManagedObjectContext *)moc andMainQueueManagedObjectContext:(NSManagedObjectContext *)mainMoc
+{
+    self.persistentStoreManagedObjectContext = moc;
+    self.mainQueueManagedObjectContext = mainMoc;
+    [self createManagedObjectContexts];
 }
 
 - (void)recreateManagedObjectContexts
