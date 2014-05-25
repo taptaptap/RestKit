@@ -545,6 +545,12 @@ RKMappingResult, RKRequestDescriptor, RKResponseDescriptor;
  */
 - (void)cancelAllObjectRequestOperationsWithMethod:(RKRequestMethod)method matchingPathPattern:(NSString *)pathPattern;
 
+/**
+ Cancels _all_ operations, including the ones in execution, in the object manager's operation queue whose requests match the specified HTTP method and path pattern.
+ @see `cancelAllObjectRequestOperationsWithMethod:matchingPathPattern:`.
+ */
+- (void)cancelAllObjectRequestOperationsWithMethod:(RKRequestMethod)method matchingPathPattern:(NSString *)pathPattern includeExecuting:(BOOL)all;
+
 ///-----------------------------------------
 /// @name Batching Object Request Operations
 ///-----------------------------------------

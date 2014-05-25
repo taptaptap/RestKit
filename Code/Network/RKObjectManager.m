@@ -906,10 +906,36 @@ static NSString *RKMIMETypeFromAFHTTPClientParameterEncoding(AFHTTPClientParamet
     return [matches copy];
 }
 
+- (NSArray *)_cancelAllObjectRequestOperationsWithMethod:(RKRequestMethod)method matchingPathPattern:(NSString *)pathPattern
+{
+    NSMutableArray * cancelled = [NSMutableArray new];
+    for (RKObjectRequestOperation *operation in [self enqueuedObjectRequestOperationsWithMethod:method matchingPathPattern:pathPattern]) {
+        RKHTTPRequestOperation * httpOperation = operation.HTTPRequestOperation;
+        if (! [operation isExecuting]) {
+            [operation cancel];
+            RKLogInfo(@"Cancelling operation %@", httpOperation);
+        } else {
+            RKLogInfo(@"NOT cancelling operation %@", httpOperation);
+        }
+    }
+    return cancelled;
+}
+
 - (void)cancelAllObjectRequestOperationsWithMethod:(RKRequestMethod)method matchingPathPattern:(NSString *)pathPattern
 {
+    [self cancelAllObjectRequestOperationsWithMethod:method matchingPathPattern:pathPattern includeExecuting:YES];
+}
+
+- (void)cancelAllObjectRequestOperationsWithMethod:(RKRequestMethod)method matchingPathPattern:(NSString *)pathPattern includeExecuting:(BOOL)all
+{
     for (RKObjectRequestOperation *operation in [self enqueuedObjectRequestOperationsWithMethod:method matchingPathPattern:pathPattern]) {
-        [operation cancel];
+        RKHTTPRequestOperation * httpOperation = operation.HTTPRequestOperation;
+        if (all || ! [operation isExecuting]) {
+            [operation cancel];
+            NSLog(@"Cancelling operation %@", httpOperation);
+        } else {
+            NSLog(@"NOT cancelling operation %@", httpOperation);
+        }
     }
 }
 
