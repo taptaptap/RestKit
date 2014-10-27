@@ -612,9 +612,10 @@ static NSString *RKMIMETypeFromAFHTTPClientParameterEncoding(AFHTTPClientParamet
 
 - (id)appropriateObjectRequestOperationWithObject:(id)object
                                            method:(RKRequestMethod)method
-                                             path:(NSString *)path
+                                             path:(NSString *)aPath
                                        parameters:(NSDictionary *)parameters
 {
+    NSString *path = [aPath copy];
     RKObjectRequestOperation *operation = nil;
     NSURLRequest *request = [self requestWithObject:object method:method path:path parameters:parameters];
     NSDictionary *routingMetadata = nil;
@@ -629,7 +630,7 @@ static NSString *RKMIMETypeFromAFHTTPClientParameterEncoding(AFHTTPClientParamet
         path = [URL relativeString];
         routingMetadata = @{ @"routing": @{ @"parameters": interpolatedParameters, @"route": route } };
     }
-    
+
 #ifdef RKCoreDataIncluded
     NSArray *matchingDescriptors = RKFilteredArrayOfResponseDescriptorsMatchingPathAndMethod(self.responseDescriptors, path, method);
     BOOL containsEntityMapping = RKDoesArrayOfResponseDescriptorsContainEntityMapping(matchingDescriptors);
