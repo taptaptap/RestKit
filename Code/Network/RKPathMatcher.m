@@ -58,8 +58,8 @@ NSString *RKPathFromPatternWithObject(NSString *pathPattern, id object)
 @interface RKPathMatcher ()
 @property (nonatomic, strong) SOCPattern *socPattern;
 @property (nonatomic, copy) NSString *patternString; // SOCPattern keeps it private
-@property (nonatomic, copy) NSString *sourcePath;
-@property (nonatomic, copy) NSString *rootPath;
+@property (copy) NSString *sourcePath;
+@property (copy) NSString *rootPath;
 @property (copy, readwrite) NSDictionary *queryParameters;
 @end
 
